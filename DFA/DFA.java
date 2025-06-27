@@ -68,7 +68,7 @@ public class DFA {
         dfa.addTransition(State.PASTA, space, State.PASTA, 1, null);
 
         dfa.addTransition(State.PASTA, new CharCondition(Character::isLetter), State.VAR_NAME_PASTA, 1, "ID");
-        dfa.addTransition(State.VAR_NAME_PASTA, new CharCondition(Character::isLetterOrDigit), State.VAR_NAME_PASTA, 1, null);
+        dfa.addTransition(State.VAR_NAME_PASTA, new CharCondition(Character::isLetterOrDigit), State.VAR_NAME_PASTA, 1, null    );
         dfa.addTransition(State.VAR_NAME_PASTA, space, State.VAR_NAME_PASTA_END, 1, null);
         dfa.addTransition(State.VAR_NAME_PASTA_END, space, State.VAR_NAME_PASTA_END, 1, null);
 
@@ -78,7 +78,7 @@ public class DFA {
 
         dfa.addTransition(State.ASSIGN_PASTA, new CharCondition(Character::isDigit), State.VALUE_PASTA, 1, "entero");
 
-        dfa.addTransition(State.VALUE_PASTA, new CharCondition((Character::isDigit)), State.VALUE_PASTA, 1, null);
+        dfa.addTransition(State.VALUE_PASTA, new CharCondition((Character::isDigit)), State.VALUE_PASTA, 1, "entero");
         dfa.addTransition(State.VALUE_PASTA, new Literal("g"), State.UNIT_PASTA, 1, "unidad");
         dfa.addTransition(State.UNIT_PASTA, new Literal("~"), State.PASTA_ACCEPT, 1, "end_line");
         dfa.setAccept(State.PASTA_ACCEPT);
@@ -116,8 +116,8 @@ public class DFA {
         dfa.addTransition(State.VAR_NAME_BASIL_END, new Literal("="), State.ASIGN_BASIL, 1, "igual");
         dfa.addTransition(State.ASIGN_BASIL, space, State.ASIGN_BASIL, 1, null);
 
-        dfa.addTransition(State.ASIGN_BASIL, new Literal("cooked"), State.COOKED_BASIL, 6, "estado_true");
-        dfa.addTransition(State.ASIGN_BASIL, new Literal("burned"), State.BURNED_BASIL, 6, "estado_false");
+        dfa.addTransition(State.ASIGN_BASIL, new Literal("cooked"), State.COOKED_BASIL, 6, "cooked");
+        dfa.addTransition(State.ASIGN_BASIL, new Literal("burned"), State.BURNED_BASIL, 6, "burned");
         dfa.addTransition(State.COOKED_BASIL, new Literal("~"), State.BASIL_ACCEPT, 1, "end_line");
         dfa.addTransition(State.BURNED_BASIL, new Literal("~"), State.BASIL_ACCEPT, 1, "end_line");
         dfa.setAccept(State.BASIL_ACCEPT);
@@ -126,6 +126,73 @@ public class DFA {
         dfa.addTransition(State.START, new Literal("recipe "), State.RECIPE, 7, "recipe");
         dfa.addTransition(State.RECIPE, space, State.RECIPE, 1, null);
 
+        dfa.addTransition(State.RECIPE, new Literal("main "), State.MAIN, 5, "main");
+        dfa.addTransition(State.MAIN, space, State.MAIN, 1, null);
+        dfa.addTransition(State.MAIN, new CharCondition(Character::isLetter), State.MAIN_NAME, 1, "ID");
+        dfa.addTransition(State.MAIN_NAME, space, State.MAIN_NAME_END, 1, null);
+        dfa.addTransition(State.MAIN_NAME_END, space, State.MAIN_NAME_END, 1, null);
+
+        // ------- MAIN -------
+        dfa.addTransition(State.MAIN_NAME, new Literal("("), State.MAIN_PAREN_OPEN, 1, "parentesis_apertura");
+        dfa.addTransition(State.MAIN_NAME_END, new Literal("("), State.MAIN_PAREN_OPEN, 1, "parentesis_apertura");
+        dfa.addTransition(State.MAIN_PAREN_OPEN, space, State.MAIN_PAREN_OPEN, 1, null);
+
+        dfa.addTransition(State.MAIN_PAREN_OPEN, new Literal(")"), State.MAIN_PAREN_CLOSE, 1, "parentesis_cierre");
+        dfa.addTransition(State.MAIN_PAREN_CLOSE, space, State.MAIN_PAREN_CLOSE, 1, null);
+
+        dfa.addTransition(State.MAIN_PAREN_CLOSE, new Literal("{"), State.MAIN_BODY_OPEN, 1, "llave_apertura");
+        dfa.addTransition(State.MAIN_BODY_OPEN, space, State.MAIN_BODY_OPEN, 1, null);
+
+        dfa.addTransition(State.MAIN_BODY_OPEN, new Literal("pasta "), State.PASTA, 6, "pasta");
+        dfa.addTransition(State.MAIN_BODY_OPEN, new Literal("sauce "), State.SAUCE, 6, "sauce");
+        dfa.addTransition(State.MAIN_BODY_OPEN, new Literal("basil "), State.BASIL, 6, "basil");
+
+        dfa.addTransition(State.MAIN_BODY_OPEN, new Literal("chef"), State.MAIN_CHEF, 4, "chef");
+        dfa.addTransition(State.MAIN_CHEF, new Literal("."), State.MAIN_CHEF_DOT, 1, "punto_chef");
+        dfa.addTransition(State.MAIN_CHEF_DOT, new CharCondition(Character::isLetter), State.MAIN_CHEF_FUNC, 1, "chef_func");
+        dfa.addTransition(State.MAIN_CHEF_FUNC, new CharCondition(Character::isLetter), State.MAIN_CHEF_FUNC, 1, null);
+
+        dfa.addTransition(State.MAIN_CHEF_FUNC, new Literal("("), State.MAIN_CHEF_PAREN, 1, "parentesis_apertura");
+        dfa.addTransition(State.MAIN_CHEF_PAREN, space, State.MAIN_CHEF_PAREN, 1, null);
+        dfa.addTransition(State.MAIN_CHEF_PAREN, new CharCondition(Character::isLetterOrDigit), State.MAIN_CHEF_ARGS, 1, "chef_args");
+        dfa.addTransition(State.MAIN_CHEF_ARGS, new CharCondition(Character::isLetterOrDigit), State.MAIN_CHEF_ARGS, 1, null);
+        dfa.addTransition(State.MAIN_CHEF_ARGS, space, State.MAIN_CHEF_ARGS, 1, null);
+
+        dfa.addTransition(State.MAIN_CHEF_PAREN, new Literal(")"), State.MAIN_CHEF_PAREN_CLOSE, 1, "parentesis_cierre");
+        dfa.addTransition(State.MAIN_CHEF_ARGS, new Literal(")"), State.MAIN_CHEF_PAREN_CLOSE, 1, "parentesis_cierre");
+
+        dfa.addTransition(State.MAIN_CHEF_FUNC, new Literal("~"), State.MAIN_CHEF_END, 1, "end_line");
+        dfa.addTransition(State.MAIN_CHEF_PAREN_CLOSE, new Literal("~"), State.MAIN_CHEF_END, 1, "end_line");
+
+        dfa.addTransition(State.MAIN_BODY_OPEN, new Literal("serve"), State.SERVE, 5, "serve");
+        dfa.addTransition(State.SERVE, new Literal("("), State.SERVE_PAREN, 1, "parentesis_apertura");
+        dfa.addTransition(State.SERVE_PAREN, new CharCondition(Character::isLetterOrDigit), State.SERVE_ARGS, 1, "serve_args");
+        dfa.addTransition(State.SERVE_PAREN, new CharCondition(Character::isLetterOrDigit), State.SERVE_ARGS, 1, "serve_args");
+        dfa.addTransition(State.SERVE_ARGS, space, State.SERVE_ARGS, 1, null);
+        dfa.addTransition(State.SERVE_ARGS, new Literal(")"), State.SERVE_PAREN_CLOSE, 1, "parentesis_cierre");
+        dfa.addTransition(State.SERVE_PAREN_CLOSE, new Literal("~"), State.SERVE_CLOSE, 1, "end_line");
+
+
+        dfa.addTransition(State.MAIN_CHEF_END, new Literal("}"), State.MAIN_ACCEPT, 1, "llave_cierre");
+        dfa.addTransition(State.PASTA_ACCEPT, new Literal("}"), State.MAIN_ACCEPT, 1, "llave_cierre");
+        dfa.addTransition(State.SAUCE_ACCEPT, new Literal("}"), State.MAIN_ACCEPT, 1, "llave_cierre");
+        dfa.addTransition(State.BASIL_ACCEPT, new Literal("}"), State.MAIN_ACCEPT, 1, "llave_cierre");
+        dfa.addTransition(State.SERVE_CLOSE, new Literal("}"), State.MAIN_ACCEPT, 1, "llave_cierre");
+
+
+        dfa.addTransition(State.MAIN_CHEF_END, space, State.MAIN_BODY_OPEN, 1, null);
+        dfa.addTransition(State.PASTA_ACCEPT, space, State.MAIN_BODY_OPEN, 1, null);
+        dfa.addTransition(State.SAUCE_ACCEPT, space, State.MAIN_BODY_OPEN, 1, null);
+        dfa.addTransition(State.BASIL_ACCEPT, space, State.MAIN_BODY_OPEN, 1, null);
+        dfa.addTransition(State.SERVE_CLOSE, space, State.MAIN_BODY_OPEN, 1, null);
+
+
+        dfa.addTransition(State.MAIN_BODY_OPEN, space, State.MAIN_BODY_OPEN, 1, null);
+        dfa.addTransition(State.MAIN_BODY_OPEN, new Literal("}"), State.MAIN_ACCEPT, 1, "llave_cierre");
+
+        dfa.setAccept(State.MAIN_ACCEPT);
+
+        // ------- FUNC --------
         dfa.addTransition(State.RECIPE, new CharCondition(Character::isLetter), State.FUNC_NAME, 1, "ID");
         dfa.addTransition(State.FUNC_NAME, new CharCondition(Character::isLetterOrDigit), State.FUNC_NAME, 1, null);
         dfa.addTransition(State.FUNC_NAME, space, State.FUNC_NAME_END, 1, null);
@@ -144,6 +211,7 @@ public class DFA {
         dfa.addTransition(State.FUNC_ARGS_NAME, new CharCondition(Character::isLetterOrDigit), State.FUNC_ARGS_NAME, 1, null);
         dfa.addTransition(State.FUNC_ARGS_NAME, space, State.FUNC_ARGS_NAME_END, 1, null);
 
+        dfa.addTransition(State.FUNC_PAREN_OPEN, new Literal(")"), State.FUNC_PAREN_CLOSE, 1, "parentesis_cierre");
         dfa.addTransition(State.FUNC_ARGS_NAME_END, new Literal(")"), State.FUNC_PAREN_CLOSE, 1, "parentesis_cierre");
         dfa.addTransition(State.FUNC_ARGS_NAME, new Literal(")"), State.FUNC_PAREN_CLOSE, 1, "parentesis_cierre");
         dfa.addTransition(State.FUNC_PAREN_CLOSE, space, State.FUNC_PAREN_CLOSE, 1, null);
@@ -155,20 +223,41 @@ public class DFA {
         dfa.addTransition(State.FUNC_BODY_OPEN, new Literal("sauce "), State.SAUCE, 6, "sauce");
         dfa.addTransition(State.FUNC_BODY_OPEN, new Literal("basil "), State.BASIL, 6, "basil");
 
+        dfa.addTransition(State.FUNC_BODY_OPEN, new Literal("serve"), State.SERVE, 5, "serve");
+        dfa.addTransition(State.SERVE, new Literal("("), State.SERVE_PAREN, 1, "parentesis_apertura");
+        dfa.addTransition(State.SERVE_PAREN, new CharCondition(Character::isLetterOrDigit), State.SERVE_ARGS, 1, "serve_args");
+        dfa.addTransition(State.SERVE_ARGS, new CharCondition(Character::isLetterOrDigit), State.SERVE_ARGS, 1, null);
+        dfa.addTransition(State.SERVE_ARGS, space, State.SERVE_PAREN_CLOSE, 1, null);
+        dfa.addTransition(State.SERVE_ARGS, new Literal(")"), State.SERVE_PAREN_CLOSE, 1, "parentesis_cierre");
+        dfa.addTransition(State.SERVE_PAREN_CLOSE, new Literal("~"), State.SERVE_CLOSE, 1, "end_line");
+
         dfa.addTransition(State.PASTA_ACCEPT, new Literal("}"), State.FUNC_ACCEPT, 1, "llave_cierre");
         dfa.addTransition(State.SAUCE_ACCEPT, new Literal("}"), State.FUNC_ACCEPT, 1, "llave_cierre");
         dfa.addTransition(State.BASIL_ACCEPT, new Literal("}"), State.FUNC_ACCEPT, 1, "llave_cierre");
+        dfa.addTransition(State.SERVE_CLOSE, new Literal("}"), State.FUNC_ACCEPT, 1, "llave_cierre");
+
 
         dfa.addTransition(State.PASTA_ACCEPT, space, State.FUNC_BODY_OPEN, 1, null);
         dfa.addTransition(State.SAUCE_ACCEPT, space, State.FUNC_BODY_OPEN, 1, null);
         dfa.addTransition(State.BASIL_ACCEPT, space, State.FUNC_BODY_OPEN, 1, null);
+        dfa.addTransition(State.SERVE_CLOSE, space, State.FUNC_BODY_OPEN, 1, null);
 
         dfa.addTransition(State.FUNC_BODY_OPEN, space, State.FUNC_BODY_OPEN, 1, null);
         dfa.addTransition(State.FUNC_BODY_OPEN, new Literal("}"), State.FUNC_ACCEPT, 1, "llave_cierre");
+
+        dfa.addTransition(State.FUNC_ACCEPT, space, State.START, 1, null);
+        dfa.addTransition(State.BASIL_ACCEPT, space, State.START, 1, null);
+        dfa.addTransition(State.PASTA_ACCEPT, space, State.START, 1, null);
+        dfa.addTransition(State.SAUCE_ACCEPT, space, State.START, 1, null);
+
+
+        dfa.addTransition(State.FUNC_ACCEPT, new Literal("recipe "), State.RECIPE, 7, "recipe");
+        dfa.addTransition(State.FUNC_ACCEPT, new Literal("pasta "), State.PASTA, 6, "pasta");
+        dfa.addTransition(State.FUNC_ACCEPT, new Literal("basil "), State.BASIL, 6, "basil");
+        dfa.addTransition(State.FUNC_ACCEPT, new Literal("sauce "), State.SAUCE, 6, "sauce");
 
         dfa.setAccept(State.FUNC_ACCEPT);
 
         return dfa;
     }
 }
-

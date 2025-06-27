@@ -1,0 +1,1 @@
+recipe funcion() { pasta num = 8g~ serve(num)~ } recipe main m() { chef.funcion()~ }
